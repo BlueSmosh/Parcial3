@@ -21,9 +21,6 @@ namespace Parcial3.Clases
         {
             try
             {
-                // Crea la clase encriptación
-                //clsCypher cifrar = new clsCypher();
-                //se lee el usuario en base de datos
                 Administrador Admin = DBExamen.Administradors.FirstOrDefault(u => u.Usuario == login.Usuario);
                 if (Admin == null)
                 {
@@ -34,12 +31,7 @@ namespace Parcial3.Clases
                 }
                 else
                 {
-                    //el usuario existe se lee el salt
-                    // byte[] arrBytesSalt = Convert.FromBase64String(Admin.Salt);
-                    //se envia a encriptar la clave
-                    //string ClaveCifrada = cifrar.HashPassword(login.Clave, arrBytesSalt);
-                    //asigno la clave encriptada en el objecto login
-                    //login.Clave = ClaveCifrada;
+
                     return true;
                 }
 
@@ -78,25 +70,25 @@ namespace Parcial3.Clases
             if (ValidarAdmin() && ValidarClave())
             {
                 string token = TokenGenerator.GenerateTokenJwt(login.Usuario);
-                return from A in DBExamen.Set<Administrador>()
-                       join EV in DBExamen.Set<Evento>()
-                       on A.Documento equals EV.TipoEvento
-                       where A.Usuario == login.Usuario &&
-                               A.Clave == login.Clave
-                       select new LoginRespuesta
+
+                return DBExamen.Administradors
+                       .Where(a => a.Usuario == login.Usuario && a.Clave == login.Clave)
+                       .Select(a => new LoginRespuesta
                        {
-                           Usuario = A.Usuario,
+                           Usuario = a.Usuario,
                            Autenticado = true,
                            Token = token,
                            Mensaje = ""
-                       };
+                           
+                       });
             }
             else
             {
                 List<LoginRespuesta> List = new List<LoginRespuesta>();
-                List.Add(loginRespuesta);
+                List.Add(loginRespuesta); // Esta ya tiene el mensaje de error correspondiente
                 return List.AsQueryable();
             }
         }
+
     }
 }
